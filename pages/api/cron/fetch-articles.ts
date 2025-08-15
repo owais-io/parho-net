@@ -1,3 +1,5 @@
+// pages/api/cron/fetch-articles.ts
+
 import { NextApiRequest, NextApiResponse } from 'next';
 import { PrismaClient } from '@prisma/client';
 import { GuardianApiService } from '../../../lib/guardianApi';
@@ -110,8 +112,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 heading: '',
                 category: '',
                 summary: '',
-                tldr: [],
-                faqs: [],
+                tldr: [] as any,
+                faqs: [] as any,
                 processingStatus: 'PROCESSING'
               }
             });
@@ -132,8 +134,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               heading: summary.heading,
               category: summary.category,
               summary: summary.summary,
-              tldr: summary.tldr,
-              faqs: summary.faqs,
+              tldr: summary.tldr as any,
+              faqs: summary.faqs as any,
               wordCountOriginal: originalWordCount,
               wordCountSummary: summaryWordCount,
               characterCountOriginal: originalCharCount,
