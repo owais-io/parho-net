@@ -1,3 +1,5 @@
+// pages/api/admin/manual-fetch.ts
+
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../lib/auth';
@@ -106,8 +108,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               heading: '',
               category: '',
               summary: '',
-              tldr: [],
-              faqs: [],
+              tldr: [] as any,
+              faqs: [] as any,
               processingStatus: 'PROCESSING'
             }
           });
@@ -127,8 +129,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               heading: summary.heading,
               category: summary.category,
               summary: summary.summary,
-              tldr: summary.tldr,
-              faqs: summary.faqs,
+              tldr: summary.tldr as any,
+              faqs: summary.faqs as any,
               wordCountOriginal: originalWordCount,
               wordCountSummary: summaryWordCount,
               characterCountOriginal: originalCharCount,
