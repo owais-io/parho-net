@@ -1,0 +1,144 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Table 1: Track all processed Guardian article IDs to prevent duplicates
+model ProcessedArticleId {
+  id          String   @id // Guardian article ID
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  guardianArticle GuardianArticle?
+  openaiSummary   OpenaiSummary?
+  
+  @@map("processed_article_ids")
+}
+
+// Table 2: Store Guardian articles data
+model GuardianArticle {
+  id                  Int      @id @default(autoincrement())
+  guardianId          String   @unique
+  type                String
+  sectionName         String
+  webPublicationDate  DateTime
+  bodyText            String   @db.Text
+  thumbnail           String?
+  
+  // Additional fields
+  status              ArticleStatus @default(PUBLISHED)
+  wordCount           Int?
+  characterCount      Int?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  deletedAt           DateTime?
+  
+  // Relations
+  processedId ProcessedArticleId @relation(fields: [guardianId], references: [id])
+  openaiSummary OpenaiSummary?
+  
+  @@map("guardian_articles")
+}
+
+// Table 3: Store OpenAI summaries
+model OpenaiSummary {
+  id                    Int      @id @default(autoincrement())
+  guardianId            String   @unique
+  
+  // OpenAI response fields
+  heading               String   @default("")
+  category              String   @default("")
+  summary               String   @default("") @db.Text  // 500-word summary in paragraphs
+  tldr                  Json     @default("[]") // Array of 3 bullet points
+  faqs                  Json     @default("[]") // Array of 5 FAQs
+  
+  // Metrics
+  wordCountOriginal     Int?
+  wordCountSummary      Int?
+  characterCountOriginal Int?
+  characterCountSummary  Int?
+  tokensUsed            Int?
+  processingCostUsd     Decimal?  @db.Decimal(10, 6)
+  
+  // Processing status
+  processingStatus      ProcessingStatus @default(PENDING)
+  processingError       String?
+  
+  // Timestamps
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  deletedAt             DateTime?
+  
+  // Relations
+  processedId ProcessedArticleId @relation(fields: [guardianId], references: [id], map: "openai_processed_id_fkey")
+  guardianArticle GuardianArticle @relation(fields: [guardianId], references: [guardianId], map: "openai_guardian_article_fkey")
+  
+  @@map("openai_summaries")
+}
+
+// Table 4: Store cron job logs for monitoring
+model CronJobLog {
+  id              Int      @id @default(autoincrement())
+  jobType         JobType  @default(SCHEDULED)
+  status          JobStatus @default(RUNNING)
+  articlesFound   Int?
+  articlesProcessed Int?
+  articlesFailed  Int?
+  startTime       DateTime @default(now())
+  endTime         DateTime?
+  errorMessage    String?
+  manualCount     Int?     // If manually triggered with specific count
+  
+  @@map("cron_job_logs")
+}
+
+// Table 5: Store admin actions for audit trail
+model AdminLog {
+  id          Int        @id @default(autoincrement())
+  action      AdminAction
+  guardianId  String?
+  details     Json?
+  userEmail   String
+  createdAt   DateTime   @default(now())
+  
+  @@map("admin_logs")
+}
+
+// Enums
+enum ArticleStatus {
+  PUBLISHED
+  UNPUBLISHED
+}
+
+enum ProcessingStatus {
+  PENDING
+  PROCESSING  
+  COMPLETED
+  FAILED
+}
+
+enum JobType {
+  SCHEDULED
+  MANUAL
+}
+
+enum JobStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum AdminAction {
+  DELETE_ARTICLE
+  BULK_DELETE
+  UNPUBLISH_ARTICLE
+  MANUAL_FETCH
+  RETRY_PROCESSING
+}

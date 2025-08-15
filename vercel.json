@@ -1,0 +1,13 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/fetch-articles",
+      "schedule": "0 * * * *"
+    }
+  ],
+  "functions": {
+    "pages/api/cron/fetch-articles.ts": {
+      "maxDuration": 300
+    }
+  }
+}
