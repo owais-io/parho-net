@@ -561,11 +561,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     where: whereClause,
   });
 
+  // In your getServerSideProps function, replace the stats object creation:
+
   // Get dashboard stats
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const stats = {
+  const stats: DashboardStats = {
     totalArticles: await prisma.guardianArticle.count({ where: { deletedAt: null } }),
     publishedArticles: await prisma.guardianArticle.count({ 
       where: { status: 'PUBLISHED', deletedAt: null } 
@@ -592,6 +594,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         deletedAt: null
       }
     }),
+    lastCronRun: undefined, // Initialize as undefined
   };
 
   const lastCronRun = await prisma.cronJobLog.findFirst({
@@ -601,7 +604,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   if (lastCronRun) {
     stats.lastCronRun = lastCronRun.startTime.toISOString();
   }
-
   await prisma.$disconnect();
 
   return {
