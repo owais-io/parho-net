@@ -1,3 +1,5 @@
+//  pages/admin/login.tsx
+
 import { GetServerSideProps } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../lib/auth';
