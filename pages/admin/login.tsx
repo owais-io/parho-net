@@ -1,4 +1,4 @@
-//  pages/admin/login.tsx
+//   pages/admin/login.tsx
 
 import { GetServerSideProps } from 'next';
 import { getServerSession } from 'next-auth';
