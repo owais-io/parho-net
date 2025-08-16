@@ -5,7 +5,6 @@ import Layout from '../components/Layout';
 import { 
   ClockIcon, 
   TagIcon, 
-  TrendingUpIcon, 
   BookOpenIcon,
   ArrowRightIcon
 } from '@heroicons/react/24/outline';
