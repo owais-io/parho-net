@@ -1,8 +1,8 @@
-// app/robots.ts (App Router) OR pages/robots.txt.js (Pages Router)
+// pages/robots.txt.ts
 
 import { GetServerSideProps } from 'next';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.parho.net';
 
 export const getServerSideProps: GetServerSideProps = async ({ res }) => {
   const robotsTxt = `User-agent: *

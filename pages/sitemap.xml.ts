@@ -1,11 +1,19 @@
-// pages/sitemap.xml.js (for Pages Router - since you're using pages/)
+// pages/sitemap.xml.ts
 
+import { GetServerSideProps } from 'next';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.parho.net';
 
-function generateSiteMap(urls) {
+interface SitemapEntry {
+  loc: string;
+  lastmod: string;
+  changefreq: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never';
+  priority: string;
+}
+
+function generateSiteMap(urls: SitemapEntry[]): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
      ${urls
@@ -24,9 +32,9 @@ function generateSiteMap(urls) {
  `;
 }
 
-export async function getServerSideProps({ res }) {
+export const getServerSideProps: GetServerSideProps = async ({ res }) => {
   try {
-    const urls = [];
+    const urls: SitemapEntry[] = [];
 
     // Static pages
     urls.push(
@@ -106,7 +114,7 @@ export async function getServerSideProps({ res }) {
           .replace(/\s+/g, '-');
 
         urls.push({
-          loc: `${SITE_URL}/category/${categorySlug}`,
+          loc: `${SITE_URL}/category/${encodeURIComponent(cat.category)}`,
           lastmod: cat.updatedAt.toISOString(),
           changefreq: 'daily',
           priority: '0.6',
@@ -146,8 +154,9 @@ export async function getServerSideProps({ res }) {
   } finally {
     await prisma.$disconnect();
   }
-}
+};
 
 export default function SiteMap() {
   // getServerSideProps will do the heavy lifting
+  return null;
 }
