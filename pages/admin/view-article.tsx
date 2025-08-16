@@ -4,7 +4,7 @@ import { GetServerSideProps } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../lib/auth';
 import { PrismaClient } from '@prisma/client';
-import { ArrowLeftIcon, ClockIcon, TagIcon, ExternalLinkIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, ClockIcon, TagIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
 interface ArticleData {
@@ -87,7 +87,7 @@ export default function ViewArticle({ article }: ArticleViewProps) {
                 target="_blank"
                 className="flex items-center text-green-600 hover:text-green-800 bg-green-50 px-4 py-2 rounded-md"
               >
-                <ExternalLinkIcon className="h-4 w-4 mr-2" />
+                <ArrowTopRightOnSquareIcon className="h-4 w-4 mr-2" />
                 View Public Page
               </Link>
             )}
