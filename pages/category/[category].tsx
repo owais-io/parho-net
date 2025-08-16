@@ -65,6 +65,7 @@ export default function CategoryPage({
 
   const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'ParhoNet';
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.parho.net';
+  const pageTitle = `${category} News - Latest ${category} Articles & Summaries | ${SITE_NAME}`
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -184,9 +185,9 @@ export default function CategoryPage({
         
         <div className="p-6">
           <div className="flex items-center gap-3 mb-3">
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+            {/* <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
               {article.sectionName}
-            </span>
+            </span> */}
             <div className="flex items-center text-gray-500 text-sm">
               <ClockIcon className="h-4 w-4 mr-1" />
               <time dateTime={article.webPublicationDate}>
@@ -249,9 +250,9 @@ export default function CategoryPage({
         
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-3">
-            <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded">
+            {/* <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded">
               {article.sectionName}
-            </span>
+            </span> */}
             <span className="text-gray-500 text-sm">
               <time dateTime={article.webPublicationDate}>
                 {formatDate(article.webPublicationDate)}
@@ -286,9 +287,9 @@ export default function CategoryPage({
     <>
       <Head>
         {/* Primary Meta Tags */}
-        <title>{category} News - Latest {category} Articles & Summaries | {SITE_NAME}</title>
+        <title>{pageTitle}</title>
         <meta name="description" content={seoData.categoryDescription} />
-        <meta name="keywords" content={seoData.categoryKeywords.join(', ')} />
+        <meta name="keywords" content={seoData.categoryKeywords.filter(Boolean).join(', ')} />
         
         {/* Canonical URL */}
         <link rel="canonical" href={seoData.canonicalUrl} />
@@ -318,7 +319,7 @@ export default function CategoryPage({
         <meta name="googlebot" content="index, follow" />
         
         {/* News-specific meta tags */}
-        <meta name="news_keywords" content={seoData.categoryKeywords.join(', ')} />
+        <meta name="news_keywords" content={seoData.categoryKeywords.filter(Boolean).join(', ')} />
         <meta name="article:section" content={category} />
         
         {/* Pagination meta tags */}
@@ -376,10 +377,10 @@ export default function CategoryPage({
                     <TagIcon className="h-6 w-6 text-blue-600 mr-3" />
                     <h2 className="text-xl font-bold text-gray-900">{category}</h2>
                   </div>
-                  <div className="text-sm text-gray-600">
+                  {/* <div className="text-sm text-gray-600">
                     <p className="mb-2">{totalCount} articles in this category</p>
                     <p>AI-categorized content from The Guardian</p>
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* Search */}
@@ -452,11 +453,11 @@ export default function CategoryPage({
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
                       {category} News
                     </h1>
-                    <p className="text-gray-600">
+                    {/* <p className="text-gray-600">
                       {filteredArticles.length} of {totalCount} articles
                       {searchQuery && ` matching "${searchQuery}"`}
                       {currentPage > 1 && ` - Page ${currentPage} of ${totalPages}`}
-                    </p>
+                    </p> */}
                   </div>
                   
                   <div className="flex items-center space-x-4 mt-4 md:mt-0">

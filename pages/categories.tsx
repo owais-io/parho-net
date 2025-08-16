@@ -2,14 +2,15 @@ import { GetServerSideProps } from 'next';
 import { PrismaClient } from '@prisma/client';
 import Head from 'next/head';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Layout from '../components/Layout';
 import { 
   TagIcon, 
   BookOpenIcon,
   MagnifyingGlassIcon,
   Squares2X2Icon,
-  ListBulletIcon
+  ListBulletIcon,
+  ChevronDownIcon
 } from '@heroicons/react/24/outline';
 
 interface Category {
@@ -40,34 +41,64 @@ interface CategoriesPageProps {
   };
 }
 
+const ITEMS_PER_PAGE = 12; // Show 12 categories initially (4 rows of 3)
+const LOAD_MORE_INCREMENT = 9; // Load 9 more each time (3 rows of 3)
+
 export default function CategoriesPage({ categories, totalArticles, stats, seoData }: CategoriesPageProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'alphabetical' | 'count' | 'recent'>('count');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
+  const [isLoading, setIsLoading] = useState(false);
 
   const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'ParhoNet';
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.parho.net';
   const PAGE_DESCRIPTION = `Browse ${stats.totalCategories} news categories including ${seoData.topCategories.join(', ')} and more. Access ${totalArticles.toLocaleString()} AI-summarized articles organized by intelligent categorization.`;
+  const pageTitle = `News Categories - Browse ${stats.totalCategories} Topics | ${SITE_NAME}`
 
-  const filteredCategories = categories
-    .filter(category =>
-      searchQuery === '' || 
-      category.name.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .sort((a, b) => {
-      switch (sortBy) {
-        case 'alphabetical':
-          return a.name.localeCompare(b.name);
-        case 'count':
-          return b.count - a.count;
-        case 'recent':
-          const aLatest = new Date(a.recentArticles[0]?.webPublicationDate || 0);
-          const bLatest = new Date(b.recentArticles[0]?.webPublicationDate || 0);
-          return bLatest.getTime() - aLatest.getTime();
-        default:
-          return 0;
-      }
-    });
+  const filteredCategories = useMemo(() => {
+    return categories
+      .filter(category =>
+        searchQuery === '' || 
+        category.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .sort((a, b) => {
+        switch (sortBy) {
+          case 'alphabetical':
+            return a.name.localeCompare(b.name);
+          case 'count':
+            return b.count - a.count;
+          case 'recent':
+            const aLatest = new Date(a.recentArticles[0]?.webPublicationDate || 0);
+            const bLatest = new Date(b.recentArticles[0]?.webPublicationDate || 0);
+            return bLatest.getTime() - aLatest.getTime();
+          default:
+            return 0;
+        }
+      });
+  }, [categories, searchQuery, sortBy]);
+
+  // Reset display count when search or sort changes
+  const displayedCategories = useMemo(() => {
+    return filteredCategories.slice(0, displayCount);
+  }, [filteredCategories, displayCount]);
+
+  // Reset display count when filters change
+  useMemo(() => {
+    setDisplayCount(ITEMS_PER_PAGE);
+  }, [searchQuery, sortBy]);
+
+  const hasMore = displayedCategories.length < filteredCategories.length;
+  const remainingCount = filteredCategories.length - displayedCategories.length;
+
+  const handleLoadMore = () => {
+    setIsLoading(true);
+    // Simulate loading delay for better UX
+    setTimeout(() => {
+      setDisplayCount(prev => prev + LOAD_MORE_INCREMENT);
+      setIsLoading(false);
+    }, 300);
+  };
 
   const getCategoryColor = (index: number) => {
     const colors = [
@@ -172,9 +203,6 @@ export default function CategoriesPage({ categories, totalArticles, stats, seoDa
             <h3 className="text-white font-bold text-xl group-hover:scale-105 transition-transform">
               {category.name}
             </h3>
-            <p className="text-white/80 text-sm">
-              {category.count} {category.count === 1 ? 'article' : 'articles'}
-            </p>
           </div>
           <TagIcon className="absolute top-4 right-4 h-6 w-6 text-white/70" />
         </div>
@@ -265,9 +293,9 @@ export default function CategoriesPage({ categories, totalArticles, stats, seoDa
     <>
       <Head>
         {/* Primary Meta Tags */}
-        <title>News Categories - Browse {stats.totalCategories} Topics | {SITE_NAME}</title>
+        <title>{pageTitle}</title>
         <meta name="description" content={PAGE_DESCRIPTION} />
-        <meta name="keywords" content={`news categories, ${seoData.categoryNames.join(', ')}, news topics, AI categorization, news organization, ${SITE_NAME}`} />
+        <meta name="keywords" content={`news categories, ${seoData.categoryNames.filter(Boolean).join(', ')}, news topics, AI categorization, news organization, ${SITE_NAME}`} />
         
         {/* Canonical URL */}
         <link rel="canonical" href={seoData.canonicalUrl} />
@@ -297,7 +325,7 @@ export default function CategoriesPage({ categories, totalArticles, stats, seoDa
         <meta name="googlebot" content="index, follow" />
         
         {/* News-specific meta tags */}
-        <meta name="news_keywords" content={seoData.topCategories.join(', ')} />
+        <meta name="news_keywords" content={seoData.topCategories.filter(Boolean).join(', ')} />
         
         {/* Structured Data */}
         {structuredDataArray.map((data, index) => (
@@ -339,24 +367,13 @@ export default function CategoriesPage({ categories, totalArticles, stats, seoDa
             <header className="text-center mb-12">
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
                 Browse by 
-                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent block">
+                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent block pb-2">
                   Category
                 </span>
               </h1>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-6">
                 Discover news organized by AI-detected topics and themes. Each category contains articles automatically classified by our intelligent system.
               </p>
-              <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-500">
-                <span className="flex items-center">
-                  <TagIcon className="h-4 w-4 mr-1" />
-                  {stats.totalCategories} Categories
-                </span>
-                <span className="flex items-center">
-                  <BookOpenIcon className="h-4 w-4 mr-1" />
-                  {totalArticles.toLocaleString()} Articles
-                </span>
-                <span>Updated Daily</span>
-              </div>
             </header>
 
             {/* Controls */}
@@ -425,7 +442,7 @@ export default function CategoriesPage({ categories, totalArticles, stats, seoDa
               {/* Results count */}
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <p className="text-sm text-gray-600">
-                  Showing {filteredCategories.length} of {categories.length} categories
+                  Showing {displayedCategories.length} of {filteredCategories.length} categories
                   {searchQuery && ` matching "${searchQuery}"`}
                 </p>
               </div>
@@ -436,16 +453,39 @@ export default function CategoriesPage({ categories, totalArticles, stats, seoDa
               {filteredCategories.length > 0 ? (
                 <>
                   {viewMode === 'grid' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                      {filteredCategories.map((category, index) => (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                      {displayedCategories.map((category, index) => (
                         <GridCategoryCard key={category.name} category={category} index={index} />
                       ))}
                     </div>
                   ) : (
-                    <div className="space-y-4 mb-12">
-                      {filteredCategories.map((category, index) => (
+                    <div className="space-y-4 mb-8">
+                      {displayedCategories.map((category, index) => (
                         <ListCategoryCard key={category.name} category={category} index={index} />
                       ))}
+                    </div>
+                  )}
+
+                  {/* Load More Button */}
+                  {hasMore && (
+                    <div className="text-center mb-12">
+                      <button
+                        onClick={handleLoadMore}
+                        disabled={isLoading}
+                        className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
+                      >
+                        {isLoading ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                            Loading...
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDownIcon className="h-4 w-4 mr-2" />
+                            Load More Categories ({remainingCount} remaining)
+                          </>
+                        )}
+                      </button>
                     </div>
                   )}
                 </>
@@ -473,23 +513,7 @@ export default function CategoriesPage({ categories, totalArticles, stats, seoDa
               )}
             </main>
 
-            {/* Popular Category Highlight */}
-            {stats.mostPopularCategory && (
-              <section className="mt-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white text-center">
-                <h2 className="text-2xl font-bold mb-2">Most Popular Category</h2>
-                <p className="text-blue-100 mb-4">
-                  The "{stats.mostPopularCategory}" category has the most articles with comprehensive AI summaries
-                </p>
-                <Link
-                  href={`/category/${encodeURIComponent(stats.mostPopularCategory)}`}
-                  className="inline-block bg-white text-blue-600 px-6 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-colors"
-                >
-                  Explore {stats.mostPopularCategory}
-                </Link>
-              </section>
-            )}
-
-            {/* Category Navigation for SEO */}
+            {/* Category Navigation for SEO - This remains unchanged */}
             <nav className="mt-16" aria-label="All categories">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">All Categories</h2>
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
@@ -514,6 +538,7 @@ export default function CategoriesPage({ categories, totalArticles, stats, seoDa
   );
 }
 
+// getServerSideProps remains exactly the same
 export const getServerSideProps: GetServerSideProps = async () => {
   const prisma = new PrismaClient();
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.parho.net';

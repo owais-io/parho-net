@@ -44,9 +44,12 @@ interface HomePageProps {
 }
 
 export default function HomePage({ featuredArticles, recentArticles, categories, stats, seoData }: HomePageProps) {
-  const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'ParhoNet';
+  const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'parho.net';
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.parho.net';
   const SITE_DESCRIPTION = `${SITE_NAME} - Your premier source for intelligent news summaries. Get the latest news from technology, science, environment, and politics with AI-powered summaries, TL;DR points, and comprehensive FAQs.`;
+
+  const pageTitle = `${SITE_NAME} - Intelligent News Summaries | AI-Powered News Analysis`;
+
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -150,9 +153,9 @@ export default function HomePage({ featuredArticles, recentArticles, categories,
     <>
       <Head>
         {/* Primary Meta Tags */}
-        <title>{SITE_NAME} - Intelligent News Summaries | AI-Powered News Analysis</title>
+        <title>{pageTitle}</title>
         <meta name="description" content={SITE_DESCRIPTION} />
-        <meta name="keywords" content={`news summaries, ${seoData.featuredKeywords.join(', ')}, AI news analysis, technology news, science news, environment news, politics news, TL;DR news, news FAQs`} />
+        <meta name="keywords" content={`news summaries, ${seoData.featuredKeywords.filter(Boolean).join(', ')}, AI news analysis...`} />
         
         {/* Canonical URL */}
         <link rel="canonical" href={seoData.canonicalUrl} />
@@ -186,7 +189,7 @@ export default function HomePage({ featuredArticles, recentArticles, categories,
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         
         {/* News-specific meta tags */}
-        <meta name="news_keywords" content={seoData.featuredKeywords.join(', ')} />
+        <meta name="news_keywords" content={seoData.featuredKeywords.filter(Boolean).join(', ')} />
         <meta name="article:publisher" content={SITE_URL} />
         
         {/* Geographic targeting */}
@@ -233,19 +236,42 @@ export default function HomePage({ featuredArticles, recentArticles, categories,
 
       <Layout>
         <div className="bg-gradient-to-br from-slate-50 to-blue-50">
-          {/* Hero Section */}
+{/* Hero Section - Updated with Styled Logo */}
           <section className="relative overflow-hidden" role="banner">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
               <div className="text-center">
-                <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    {SITE_NAME}
-                  </span>
-                </h1>
+                {/* Styled Logo matching Layout component */}
+                <div className="flex items-center justify-center mb-6">
+                  {/* Stylish Icon with Gradient */}
+                  <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 p-3 rounded-2xl shadow-lg mr-4">
+                    <BookOpenIcon className="h-10 w-10 text-white" />
+                  </div>
+                  
+                  {/* Stylish Logo Text - Larger for Hero */}
+                  <div className="flex items-baseline space-x-1">
+                    {/* "parho" in stylish font - Fixed descender cutting */}
+                    <h1 className="text-5xl md:text-6xl font-black tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 bg-clip-text text-transparent leading-tight pb-2" 
+                        style={{ 
+                          fontFamily: '"Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif',
+                          letterSpacing: '-0.02em',
+                          lineHeight: '1.1'
+                        }}>
+                      parho
+                    </h1>
+                    {/* ".net" in simple font */}
+                    <span className="text-2xl md:text-3xl font-medium text-gray-600 pb-2"
+                          style={{ fontFamily: 'ui-monospace, "SF Mono", Consolas, monospace' }}>
+                      .net
+                    </span>
+                  </div>
+                </div>
+                
                 <p className="text-lg text-gray-600 max-w-2xl mx-auto">
                   Your source for intelligent news summaries powered by AI. Get comprehensive news analysis with TL;DR points, detailed summaries, and FAQs across {stats.totalCategories} categories.
                 </p>
-                <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm text-gray-500">
+                
+                {/* Optional: Uncomment the stats section if you want to show them */}
+                {/* <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm text-gray-500">
                   <span className="flex items-center">
                     <BookOpenIcon className="h-4 w-4 mr-1" />
                     {stats.totalArticles.toLocaleString()} Articles
@@ -255,18 +281,18 @@ export default function HomePage({ featuredArticles, recentArticles, categories,
                     {stats.totalCategories} Categories
                   </span>
                   <span>Daily Updates</span>
-                </div>
+                </div> */}
               </div>
             </div>
           </section>
 
-          {/* Featured Articles */}
+{/* Featured Articles - Updated to show 4 per row */}
           <section className="py-16 bg-white" role="main">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex items-center justify-between mb-12">
                 <div>
                   <h2 className="text-3xl font-bold text-gray-900">Featured Stories</h2>
-                  <p className="text-gray-600 mt-2">Today's most important news, intelligently summarized</p>
+                  {/* <p className="text-gray-600 mt-2">Latest opinion pieces from The Guardian, intelligently summarized</p> */}
                 </div>
                 <Link 
                   href="/categories"
@@ -277,7 +303,8 @@ export default function HomePage({ featuredArticles, recentArticles, categories,
                 </Link>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {/* Changed grid to show 4 per row: xl:grid-cols-4 instead of lg:grid-cols-3 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                 {featuredArticles.map((article, index) => (
                   <Link 
                     key={article.guardianId}
@@ -291,47 +318,47 @@ export default function HomePage({ featuredArticles, recentArticles, categories,
                             src={article.thumbnail}
                             alt={article.openaiSummary?.heading || 'News article image'}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            loading={index < 3 ? "eager" : "lazy"}
-                            fetchPriority={index < 3 ? "high" : "auto"}
+                            loading={index < 4 ? "eager" : "lazy"}
+                            fetchPriority={index < 4 ? "high" : "auto"}
                           />
                         </div>
                       )}
                       
-                      <div className="p-6">
-                        <div className="flex items-center gap-3 mb-3">
-                          <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                            {article.openaiSummary?.category || article.sectionName}
-                          </span>
-                          <div className="flex items-center text-gray-500 text-sm">
-                            <ClockIcon className="h-4 w-4 mr-1" />
+                      <div className="p-5"> {/* Slightly reduced padding for 4-column layout */}
+                        <div className="flex items-center gap-2 mb-3"> {/* Reduced gap */}
+                          {/* <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">
+                            Opinion
+                          </span> */}
+                          <div className="flex items-center text-gray-500 text-xs"> {/* Smaller text */}
+                            <ClockIcon className="h-3 w-3 mr-1" /> {/* Smaller icon */}
                             <time dateTime={article.webPublicationDate}>
                               {formatDate(article.webPublicationDate)}
                             </time>
                           </div>
                         </div>
                         
-                        <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
+                        <h3 className="text-lg font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors leading-tight"> {/* Adjusted text size */}
                           {article.openaiSummary?.heading || 'Processing...'}
                         </h3>
                         
                         {article.openaiSummary?.summary && (
-                          <p className="text-gray-600 mb-4" style={{
+                          <p className="text-gray-600 mb-4 text-sm leading-relaxed" style={{ /* Smaller text */
                             display: '-webkit-box',
-                            WebkitLineClamp: 3,
+                            WebkitLineClamp: 2, /* Reduced from 3 to 2 lines */
                             WebkitBoxOrient: 'vertical',
                             overflow: 'hidden'
                           }}>
-                            {article.openaiSummary.summary.substring(0, 120)}...
+                            {article.openaiSummary.summary.substring(0, 100)}... {/* Reduced from 120 to 100 chars */}
                           </p>
                         )}
                         
                         <div className="flex items-center justify-between">
-                          <div className="text-sm text-gray-500">
+                          <div className="text-xs text-gray-500"> {/* Smaller text */}
                             {article.openaiSummary?.wordCountSummary && (
                               <span>{getReadTime(article.openaiSummary.wordCountSummary)} min read</span>
                             )}
                           </div>
-                          <div className="flex items-center text-blue-600 text-sm font-medium">
+                          <div className="flex items-center text-blue-600 text-xs font-medium"> {/* Smaller text */}
                             Read More <ArrowRightIcon className="h-3 w-3 ml-1 group-hover:translate-x-1 transition-transform" />
                           </div>
                         </div>
@@ -366,9 +393,9 @@ export default function HomePage({ featuredArticles, recentArticles, categories,
                           <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
                             {category.name}
                           </h3>
-                          <p className="text-sm text-gray-500 mt-1">
+                          {/* <p className="text-sm text-gray-500 mt-1">
                             {category.count} {category.count === 1 ? 'article' : 'articles'}
-                          </p>
+                          </p> */}
                         </div>
                         <TagIcon className="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
                       </div>
@@ -389,55 +416,106 @@ export default function HomePage({ featuredArticles, recentArticles, categories,
             </div>
           </section>
 
-          {/* Recent Articles */}
+          {/* Recent Articles - Updated to 2-Column Layout */}
           <section className="py-16 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <h2 className="text-3xl font-bold text-gray-900 mb-8">Latest Updates</h2>
               
-              <div className="space-y-6">
-                {recentArticles.map((article) => (
-                  <Link
-                    key={article.guardianId}
-                    href={`/story/${article.openaiSummary?.slug || 'processing'}`}
-                    className="group"
-                  >
-                    <article className="flex gap-6 p-6 bg-white border border-gray-100 rounded-xl hover:shadow-lg transition-all duration-200 group-hover:border-blue-200">
-                      {article.thumbnail && (
-                        <div className="flex-shrink-0 w-32 h-24 rounded-lg overflow-hidden">
-                          <img
-                            src={article.thumbnail}
-                            alt={article.openaiSummary?.heading || 'News article thumbnail'}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            loading="lazy"
-                          />
-                        </div>
-                      )}
-                      
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded">
-                            {article.openaiSummary?.category || article.sectionName}
-                          </span>
-                          <span className="text-gray-500 text-sm">
-                            <time dateTime={article.webPublicationDate}>
-                              {formatDate(article.webPublicationDate)}
-                            </time>
-                          </span>
-                        </div>
-                        
-                        <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors mb-2">
-                          {article.openaiSummary?.heading || 'Processing...'}
-                        </h3>
-                        
-                        {article.openaiSummary?.tldr && article.openaiSummary.tldr.length > 0 && (
-                          <p className="text-gray-600 text-sm">
-                            {article.openaiSummary.tldr[0]}
-                          </p>
+              {/* 2-Column Grid Layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Left Column - First 5 articles */}
+                <div className="space-y-6">
+                  {recentArticles.slice(0, 5).map((article) => (
+                    <Link
+                      key={article.guardianId}
+                      href={`/story/${article.openaiSummary?.slug || 'processing'}`}
+                      className="group"
+                    >
+                      <article className="flex gap-4 p-6 bg-white border border-gray-100 rounded-xl hover:shadow-lg transition-all duration-200 group-hover:border-blue-200">
+                        {article.thumbnail && (
+                          <div className="flex-shrink-0 w-24 h-20 rounded-lg overflow-hidden">
+                            <img
+                              src={article.thumbnail}
+                              alt={article.openaiSummary?.heading || 'News article thumbnail'}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              loading="lazy"
+                            />
+                          </div>
                         )}
-                      </div>
-                    </article>
-                  </Link>
-                ))}
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded">
+                              {article.openaiSummary?.category || article.sectionName}
+                            </span>
+                            <span className="text-gray-500 text-sm">
+                              <time dateTime={article.webPublicationDate}>
+                                {formatDate(article.webPublicationDate)}
+                              </time>
+                            </span>
+                          </div>
+                          
+                          <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors mb-2 line-clamp-2">
+                            {article.openaiSummary?.heading || 'Processing...'}
+                          </h3>
+                          
+                          {article.openaiSummary?.tldr && article.openaiSummary.tldr.length > 0 && (
+                            <p className="text-gray-600 text-sm line-clamp-2">
+                              {article.openaiSummary.tldr[0]}
+                            </p>
+                          )}
+                        </div>
+                      </article>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Right Column - Next 5 articles */}
+                <div className="space-y-6">
+                  {recentArticles.slice(5, 10).map((article) => (
+                    <Link
+                      key={article.guardianId}
+                      href={`/story/${article.openaiSummary?.slug || 'processing'}`}
+                      className="group"
+                    >
+                      <article className="flex gap-4 p-6 bg-white border border-gray-100 rounded-xl hover:shadow-lg transition-all duration-200 group-hover:border-blue-200">
+                        {article.thumbnail && (
+                          <div className="flex-shrink-0 w-24 h-20 rounded-lg overflow-hidden">
+                            <img
+                              src={article.thumbnail}
+                              alt={article.openaiSummary?.heading || 'News article thumbnail'}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              loading="lazy"
+                            />
+                          </div>
+                        )}
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded">
+                              {article.openaiSummary?.category || article.sectionName}
+                            </span>
+                            <span className="text-gray-500 text-sm">
+                              <time dateTime={article.webPublicationDate}>
+                                {formatDate(article.webPublicationDate)}
+                              </time>
+                            </span>
+                          </div>
+                          
+                          <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors mb-2 line-clamp-2">
+                            {article.openaiSummary?.heading || 'Processing...'}
+                          </h3>
+                          
+                          {article.openaiSummary?.tldr && article.openaiSummary.tldr.length > 0 && (
+                            <p className="text-gray-600 text-sm line-clamp-2">
+                              {article.openaiSummary.tldr[0]}
+                            </p>
+                          )}
+                        </div>
+                      </article>
+                    </Link>
+                  ))}
+                </div>
               </div>
 
               <div className="text-center mt-8">
@@ -457,15 +535,18 @@ export default function HomePage({ featuredArticles, recentArticles, categories,
   );
 }
 
+// Clean final version - replace your getServerSideProps with this:
+
 export const getServerSideProps: GetServerSideProps = async () => {
   const prisma = new PrismaClient();
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.parho.net';
 
   try {
-    // Get featured articles (recent completed summaries with slugs)
+    // Get featured articles (recent completed summaries with slugs) - OPINION ONLY & 8 articles
     const featuredArticles = await prisma.guardianArticle.findMany({
       where: {
         deletedAt: null,
+        sectionName: 'opinion', // Lowercase 'opinion' - this is the correct section name!
         openaiSummary: {
           processingStatus: 'COMPLETED',
           deletedAt: null,
@@ -489,10 +570,10 @@ export const getServerSideProps: GetServerSideProps = async () => {
       orderBy: {
         webPublicationDate: 'desc',
       },
-      take: 6,
+      take: 8, // 8 opinion articles
     });
 
-    // Get recent articles (with slugs)
+    // Get recent articles (with slugs) - Updated to fetch 10 articles instead of 5
     const recentArticles = await prisma.guardianArticle.findMany({
       where: {
         deletedAt: null,
@@ -519,8 +600,8 @@ export const getServerSideProps: GetServerSideProps = async () => {
       orderBy: {
         webPublicationDate: 'desc',
       },
-      take: 5,
-      skip: 6, // Skip the featured articles
+      take: 10,
+      skip: 8, // Skip the 8 featured opinion articles
     });
 
     // Get categories with counts

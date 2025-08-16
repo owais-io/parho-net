@@ -82,8 +82,12 @@ export default function StoryPage({ story, relatedStories, seoData }: StoryPageP
   const [isBookmarked, setIsBookmarked] = useState(false);
 
   const { guardianArticle, openaiSummary } = story;
-  const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'ParhoNet';
+  const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'parho.net';
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.parho.net';
+  const pageTitle = `Processing Article | ${SITE_NAME}`;
+  const completedPageTitle = `${openaiSummary?.heading || 'News Story'} | ${SITE_NAME}`; // Add this line
+
+
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -190,7 +194,8 @@ export default function StoryPage({ story, relatedStories, seoData }: StoryPageP
     return (
       <>
         <Head>
-          <title>Processing Article | {SITE_NAME}</title>
+          <title>{completedPageTitle}</title>
+
           <meta name="description" content="This article is currently being processed and summarized." />
           <meta name="robots" content="noindex, nofollow" />
         </Head>
@@ -216,9 +221,9 @@ export default function StoryPage({ story, relatedStories, seoData }: StoryPageP
     <>
       <Head>
         {/* Basic Meta Tags */}
-        <title>{openaiSummary.heading} | {SITE_NAME}</title>
+        <title>{completedPageTitle}</title>
         <meta name="description" content={seoData.excerpt} />
-        <meta name="keywords" content={seoData.keywords.join(', ')} />
+        <meta name="keywords" content={seoData.keywords.filter(Boolean).join(', ')} />
         
         {/* Canonical URL */}
         <link rel="canonical" href={seoData.canonicalUrl} />
@@ -259,7 +264,7 @@ export default function StoryPage({ story, relatedStories, seoData }: StoryPageP
         {/* Additional Meta Tags */}
         <meta name="author" content={SITE_NAME} />
         <meta name="publish_date" content={seoData.publishedDate} />
-        <meta name="news_keywords" content={seoData.keywords.join(', ')} />
+        <meta name="news_keywords" content={seoData.keywords.filter(Boolean).join(', ')} />
         
         {/* Rich Snippets / Structured Data */}
         {structuredDataArray && structuredDataArray.map((data, index) => (
@@ -297,15 +302,18 @@ export default function StoryPage({ story, relatedStories, seoData }: StoryPageP
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Article Header */}
             <article className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+              {/* Updated Image Section with 5:4 Aspect Ratio */}
               {guardianArticle.thumbnail && (
-                <div className="aspect-video md:aspect-[21/9] overflow-hidden">
-                  <img
-                    src={guardianArticle.thumbnail}
-                    alt={openaiSummary.heading}
-                    className="w-full h-full object-cover"
-                    loading="eager"
-                    fetchPriority="high"
-                  />
+                <div className="w-full max-w-2xl mx-auto">
+                  <div className="aspect-[5/4] overflow-hidden rounded-t-2xl">
+                    <img
+                      src={guardianArticle.thumbnail}
+                      alt={openaiSummary.heading}
+                      className="w-full h-full object-cover"
+                      loading="eager"
+                      fetchPriority="high"
+                    />
+                  </div>
                 </div>
               )}
               
@@ -334,7 +342,7 @@ export default function StoryPage({ story, relatedStories, seoData }: StoryPageP
                     >
                       <ShareIcon className="h-5 w-5" />
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => setIsBookmarked(!isBookmarked)}
                       className="p-2 text-gray-600 hover:text-blue-600 transition-colors"
                       title="Bookmark this story"
@@ -345,7 +353,7 @@ export default function StoryPage({ story, relatedStories, seoData }: StoryPageP
                       ) : (
                         <BookmarkIcon className="h-5 w-5" />
                       )}
-                    </button>
+                    </button> */}
                   </div>
                 </div>
 
@@ -379,7 +387,7 @@ export default function StoryPage({ story, relatedStories, seoData }: StoryPageP
                     aria-controls="summary-panel"
                   >
                     <BookOpenIcon className="h-4 w-4 inline mr-2" />
-                    Summary
+                    Story
                   </button>
                   <button
                     onClick={() => setActiveTab('tldr')}
