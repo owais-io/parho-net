@@ -292,7 +292,7 @@ export default function HomePage({ featuredArticles, recentArticles, categories,
                             alt={article.openaiSummary?.heading || 'News article image'}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             loading={index < 3 ? "eager" : "lazy"}
-                            fetchpriority={index < 3 ? "high" : "auto"}
+                            fetchPriority={index < 3 ? "high" : "auto"}
                           />
                         </div>
                       )}
