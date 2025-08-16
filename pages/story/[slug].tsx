@@ -462,12 +462,12 @@ export default function StoryPage({ story, relatedStories, seoData }: StoryPageP
               </div>
             </div>
 
-            {/* Related Stories */}
+            {/* Read more... */}
             {relatedStories.length > 0 && (
               <section className="bg-white rounded-2xl shadow-sm border border-gray-100">
                 <div className="p-6 border-b border-gray-100">
-                  <h2 className="text-xl font-bold text-gray-900">Related Stories</h2>
-                  <p className="text-gray-600 mt-1">More stories from this category</p>
+                  <h2 className="text-xl font-bold text-gray-900">Read more...</h2>
+                  <p className="text-gray-600 mt-1">Latest articles you might find interesting</p>
                 </div>
                 
                 <div className="p-6">
@@ -491,6 +491,12 @@ export default function StoryPage({ story, relatedStories, seoData }: StoryPageP
                           )}
                           
                           <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">
+                                {relatedStory.openaiSummary?.category}
+                              </span>
+                            </div>
+                            
                             <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors text-sm mb-2" style={{
                               display: '-webkit-box',
                               WebkitLineClamp: 2,
@@ -508,16 +514,6 @@ export default function StoryPage({ story, relatedStories, seoData }: StoryPageP
                         </article>
                       </Link>
                     ))}
-                  </div>
-                  
-                  <div className="mt-6 text-center">
-                    <Link
-                      href={`/category/${encodeURIComponent(openaiSummary.category)}`}
-                      className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      View More in {openaiSummary.category}
-                      <ArrowRightIcon className="h-4 w-4 ml-1" />
-                    </Link>
                   </div>
                 </div>
               </section>
@@ -552,7 +548,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.parho.net';
 
   try {
-    // Find the article by slug instead of encoded ID
+    // Find the article by slug
     const openaiSummary = await prisma.openaiSummary.findUnique({
       where: {
         slug: slug as string,
@@ -570,19 +566,23 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       };
     }
 
-    // Get related stories from the same category
+    // Enhanced Related Stories Logic
     let relatedStories: any[] = [];
+    const maxRelatedStories = 6; // Maximum number of related stories to show
+
     if (openaiSummary.category) {
-      relatedStories = await prisma.guardianArticle.findMany({
+      // Step 1: Get articles from the same category first (prioritized)
+      const sameCategoryStories = await prisma.guardianArticle.findMany({
         where: {
           deletedAt: null,
           guardianId: {
             not: openaiSummary.guardianId, // Exclude current article
           },
           openaiSummary: {
-            category: openaiSummary.category,
+            category: openaiSummary.category, // Same category only
             processingStatus: 'COMPLETED',
             deletedAt: null,
+            slug: { not: null }, // Only articles with slugs
           },
         },
         include: {
@@ -598,7 +598,78 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         orderBy: {
           webPublicationDate: 'desc',
         },
-        take: 6,
+        take: maxRelatedStories, // Try to get full count from same category
+      });
+
+      relatedStories = sameCategoryStories;
+
+      // Step 2: If we don't have enough articles from same category, fill with latest articles
+      if (relatedStories.length < maxRelatedStories) {
+        const remainingCount = maxRelatedStories - relatedStories.length;
+        const existingIds = relatedStories.map(story => story.guardianId);
+        
+        const latestStories = await prisma.guardianArticle.findMany({
+          where: {
+            deletedAt: null,
+            guardianId: {
+              notIn: [...existingIds, openaiSummary.guardianId], // Exclude current and already selected
+            },
+            openaiSummary: {
+              processingStatus: 'COMPLETED',
+              deletedAt: null,
+              slug: { not: null },
+              category: { not: openaiSummary.category }, // Exclude same category (already got those)
+            },
+          },
+          include: {
+            openaiSummary: {
+              select: {
+                heading: true,
+                category: true,
+                summary: true,
+                slug: true,
+              },
+            },
+          },
+          orderBy: {
+            webPublicationDate: 'desc',
+          },
+          take: remainingCount,
+        });
+
+        // Combine same category + latest articles
+        relatedStories = [...relatedStories, ...latestStories];
+      }
+    }
+
+    // Step 3: Fallback - if still no articles (edge case), get any latest articles
+    if (relatedStories.length === 0) {
+      relatedStories = await prisma.guardianArticle.findMany({
+        where: {
+          deletedAt: null,
+          guardianId: {
+            not: openaiSummary.guardianId,
+          },
+          openaiSummary: {
+            processingStatus: 'COMPLETED',
+            deletedAt: null,
+            slug: { not: null },
+          },
+        },
+        include: {
+          openaiSummary: {
+            select: {
+              heading: true,
+              category: true,
+              summary: true,
+              slug: true,
+            },
+          },
+        },
+        orderBy: {
+          webPublicationDate: 'desc',
+        },
+        take: maxRelatedStories,
       });
     }
 
