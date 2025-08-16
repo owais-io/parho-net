@@ -304,7 +304,7 @@ export default function StoryPage({ story, relatedStories, seoData }: StoryPageP
                     alt={openaiSummary.heading}
                     className="w-full h-full object-cover"
                     loading="eager"
-                    fetchPriority="high"
+                    fetchpriority="high"
                   />
                 </div>
               )}
