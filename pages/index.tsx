@@ -20,7 +20,9 @@ interface Article {
     category: string;
     summary: string;
     tldr: string[];
+    slug?: string; // Add slug field
     wordCountSummary: number;
+    processingStatus?: string; // Add processing status
   };
 }
 
