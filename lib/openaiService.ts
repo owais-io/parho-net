@@ -1,4 +1,7 @@
+// lib/openaiService.ts
+
 import OpenAI from 'openai';
+import { createUniqueSlug } from './slugUtils';
 
 export interface ArticleSummary {
   heading: string;
@@ -6,6 +9,7 @@ export interface ArticleSummary {
   summary: string; // 500-word summary in paragraphs
   tldr: string[];  // 3 bullet points
   faqs: FAQ[];     // 5 FAQs
+  slug?: string;   // Add slug field
 }
 
 interface FAQ {
@@ -22,7 +26,12 @@ export class OpenAIService {
     });
   }
 
-  async summarizeArticle(bodyText: string, originalSection: string): Promise<{
+  async summarizeArticle(
+    bodyText: string, 
+    originalSection: string,
+    prisma: any,
+    guardianId?: string
+  ): Promise<{
     summary: ArticleSummary;
     tokensUsed: number;
     estimatedCost: number;
@@ -115,6 +124,12 @@ Article text: ${cleanText}`
       
       // Validate the response
       this.validateSummary(summary);
+
+      // Generate unique slug from the heading
+      if (prisma) {
+        summary.slug = await createUniqueSlug(summary.heading, prisma, guardianId);
+        console.log(`Generated slug: ${summary.slug} for article: ${guardianId}`);
+      }
 
       const tokensUsed = response.usage?.total_tokens || 0;
       const estimatedCost = this.calculateCost(tokensUsed, 'gpt-4o');

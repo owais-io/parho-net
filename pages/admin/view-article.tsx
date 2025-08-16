@@ -1,8 +1,10 @@
+// pages/admin/view-article.tsx
+
 import { GetServerSideProps } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../lib/auth';
 import { PrismaClient } from '@prisma/client';
-import { ArrowLeftIcon, ClockIcon, TagIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, ClockIcon, TagIcon, ExternalLinkIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
 interface ArticleData {
@@ -27,6 +29,7 @@ interface ArticleData {
       question: string;
       answer: string;
     }>;
+    slug?: string; // Add slug field
     wordCountSummary: number;
     characterCountSummary: number;
     tokensUsed?: number;
@@ -65,15 +68,29 @@ export default function ViewArticle({ article }: ArticleViewProps) {
       {/* Header */}
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center py-4">
-            <Link
-              href="/admin"
-              className="flex items-center text-blue-600 hover:text-blue-800 mr-4"
-            >
-              <ArrowLeftIcon className="h-5 w-5 mr-2" />
-              Back to Dashboard
-            </Link>
-            <h1 className="text-2xl font-bold text-gray-900">Article Details</h1>
+          <div className="flex items-center justify-between py-4">
+            <div className="flex items-center">
+              <Link
+                href="/admin"
+                className="flex items-center text-blue-600 hover:text-blue-800 mr-4"
+              >
+                <ArrowLeftIcon className="h-5 w-5 mr-2" />
+                Back to Dashboard
+              </Link>
+              <h1 className="text-2xl font-bold text-gray-900">Article Details</h1>
+            </div>
+            
+            {/* Add link to public story page if slug exists */}
+            {openaiSummary?.slug && (
+              <Link
+                href={`/story/${openaiSummary.slug}`}
+                target="_blank"
+                className="flex items-center text-green-600 hover:text-green-800 bg-green-50 px-4 py-2 rounded-md"
+              >
+                <ExternalLinkIcon className="h-4 w-4 mr-2" />
+                View Public Page
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -154,9 +171,23 @@ export default function ViewArticle({ article }: ArticleViewProps) {
                       <h3 className="text-lg font-bold text-gray-900 mb-2">
                         {openaiSummary.heading}
                       </h3>
-                      <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
-                        {openaiSummary.category}
-                      </span>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                          {openaiSummary.category}
+                        </span>
+                        {/* Show slug info */}
+                        {openaiSummary.slug && (
+                          <span className="inline-block px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                            /{openaiSummary.slug}
+                          </span>
+                        )}
+                      </div>
+                      {/* Public URL */}
+                      {openaiSummary.slug && (
+                        <div className="text-xs text-gray-500">
+                          Public URL: <span className="font-mono text-blue-600">/story/{openaiSummary.slug}</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Stats */}
@@ -218,6 +249,9 @@ export default function ViewArticle({ article }: ArticleViewProps) {
                       <div>Tokens Used: {openaiSummary.tokensUsed?.toLocaleString()}</div>
                       <div>Characters: {openaiSummary.characterCountSummary?.toLocaleString()}</div>
                       <div>Status: {openaiSummary.processingStatus}</div>
+                      {openaiSummary.slug && (
+                        <div>Slug: {openaiSummary.slug}</div>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -239,6 +273,12 @@ export default function ViewArticle({ article }: ArticleViewProps) {
                         : 'Processing pending'
                       }
                     </p>
+                    {/* Show slug even if processing is not complete */}
+                    {openaiSummary.slug && (
+                      <div className="text-xs text-gray-500 mt-2">
+                        Slug: {openaiSummary.slug}
+                      </div>
+                    )}
                   </div>
                 )}
               </>
@@ -299,11 +339,25 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       };
     }
 
+    // UPDATED: Include slug in the query
     const openaiSummary = await prisma.openaiSummary.findUnique({
       where: {
         guardianId: guardianId,
         deletedAt: null,
       },
+      select: {
+        heading: true,
+        category: true,
+        summary: true,
+        tldr: true,
+        faqs: true,
+        slug: true, // Add slug field
+        wordCountSummary: true,
+        characterCountSummary: true,
+        tokensUsed: true,
+        processingCostUsd: true,
+        processingStatus: true,
+      }
     });
 
     await prisma.$disconnect();

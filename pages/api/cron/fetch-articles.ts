@@ -119,15 +119,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             });
           });
 
+          // UPDATED: Pass prisma instance and guardianId for slug generation
           const { summary, tokensUsed, estimatedCost } = await openaiService.summarizeArticle(
             cleanBodyText,
-            article.sectionName
+            article.sectionName,
+            prisma,
+            article.id
           );
 
           const summaryWordCount = OpenAIService.countWords(summary.summary);
           const summaryCharCount = OpenAIService.countCharacters(summary.summary);
 
-          // Store OpenAI summary
+          // UPDATED: Store OpenAI summary with slug
           await prisma.openaiSummary.update({
             where: { guardianId: article.id },
             data: {
@@ -136,6 +139,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               summary: summary.summary,
               tldr: summary.tldr as any,
               faqs: summary.faqs as any,
+              slug: summary.slug, // Add slug field
               wordCountOriginal: originalWordCount,
               wordCountSummary: summaryWordCount,
               characterCountOriginal: originalCharCount,
@@ -148,7 +152,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           });
 
           result.articlesProcessed++;
-          console.log(`Successfully processed article: ${article.id}`);
+          console.log(`Successfully processed article: ${article.id} with slug: ${summary.slug}`);
 
         } catch (openaiError) {
           console.error(`OpenAI processing failed for article ${article.id}:`, openaiError);

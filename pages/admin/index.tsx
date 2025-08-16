@@ -1,3 +1,5 @@
+// pages/admin/index.tsx
+
 import { GetServerSideProps } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../lib/auth';
@@ -29,6 +31,7 @@ interface Article {
     id: number;
     heading: string;
     category: string;
+    slug?: string; // Add slug field
     wordCountSummary: number;
     characterCountSummary: number;
     processingStatus: string;
@@ -410,6 +413,10 @@ export default function AdminDashboard({ initialArticles, totalCount, stats }: A
                         {article.openaiSummary?.heading || 'Processing...'}
                       </div>
                       <div className="text-sm text-gray-500">ID: {article.guardianId}</div>
+                      {/* Show slug if available */}
+                      {article.openaiSummary?.slug && (
+                        <div className="text-xs text-blue-600">/{article.openaiSummary.slug}</div>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
@@ -448,10 +455,15 @@ export default function AdminDashboard({ initialArticles, totalCount, stats }: A
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex space-x-2">
+                        {/* Updated View button to use slug if available, fallback to base64 */}
                         <button
                           onClick={() => {
-                            const encodedId = Buffer.from(article.guardianId).toString('base64');
-                            window.open(`/admin/view-article?id=${encodedId}`, '_blank');
+                            if (article.openaiSummary?.slug) {
+                              window.open(`/story/${article.openaiSummary.slug}`, '_blank');
+                            } else {
+                              const encodedId = Buffer.from(article.guardianId).toString('base64');
+                              window.open(`/admin/view-article?id=${encodedId}`, '_blank');
+                            }
                           }}
                           className="text-blue-600 hover:text-blue-900"
                           title="View Article"
@@ -536,11 +548,23 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     whereClause.sectionName = guardianCategory;
   }
 
-  // Fetch articles with summaries
+  // Fetch articles with summaries - UPDATED to include slug
   let articles = await prisma.guardianArticle.findMany({
     where: whereClause,
     include: {
-      openaiSummary: true,
+      openaiSummary: {
+        select: {
+          id: true,
+          heading: true,
+          category: true,
+          slug: true, // Add slug field
+          wordCountSummary: true,
+          characterCountSummary: true,
+          processingStatus: true,
+          tokensUsed: true,
+          processingCostUsd: true,
+        }
+      },
     },
     orderBy: {
       webPublicationDate: 'desc',
@@ -560,8 +584,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const totalCount = await prisma.guardianArticle.count({
     where: whereClause,
   });
-
-  // In your getServerSideProps function, replace the stats object creation:
 
   // Get dashboard stats
   const today = new Date();
@@ -594,7 +616,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         deletedAt: null
       }
     }),
-    lastCronRun: undefined, // Initialize as undefined
+    lastCronRun: undefined,
   };
 
   const lastCronRun = await prisma.cronJobLog.findFirst({

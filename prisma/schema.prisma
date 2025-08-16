@@ -59,6 +59,9 @@ model OpenaiSummary {
   tldr                  Json     @default("[]") // Array of 3 bullet points
   faqs                  Json     @default("[]") // Array of 5 FAQs
   
+  // NEW: SEO-friendly slug field
+  slug                  String?  @unique
+  
   // Metrics
   wordCountOriginal     Int?
   wordCountSummary      Int?
