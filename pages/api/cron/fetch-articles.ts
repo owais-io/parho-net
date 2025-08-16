@@ -28,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const { count, isManual = false } = req.body;
-  const requestedCount = count || 50;
+  const requestedCount = count || 450;
 
   // Create job log entry
   const jobLog = await prisma.cronJobLog.create({
