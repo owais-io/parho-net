@@ -45,7 +45,7 @@ interface HomePageProps {
 
 export default function HomePage({ featuredArticles, recentArticles, categories, stats, seoData }: HomePageProps) {
   const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'ParhoNet';
-  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.parho.net';
   const SITE_DESCRIPTION = `${SITE_NAME} - Your premier source for intelligent news summaries. Get the latest news from technology, science, environment, and politics with AI-powered summaries, TL;DR points, and comprehensive FAQs.`;
 
   const formatDate = (dateString: string) => {
@@ -459,7 +459,7 @@ export default function HomePage({ featuredArticles, recentArticles, categories,
 
 export const getServerSideProps: GetServerSideProps = async () => {
   const prisma = new PrismaClient();
-  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.parho.net';
 
   try {
     // Get featured articles (recent completed summaries with slugs)

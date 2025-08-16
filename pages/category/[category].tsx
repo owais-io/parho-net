@@ -64,7 +64,7 @@ export default function CategoryPage({
   const [searchQuery, setSearchQuery] = useState('');
 
   const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'ParhoNet';
-  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.parho.net';
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -614,7 +614,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const skip = (page - 1) * itemsPerPage;
 
   const prisma = new PrismaClient();
-  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.parho.net';
 
   try {
     const decodedCategory = decodeURIComponent(category as string);

@@ -83,7 +83,7 @@ export default function StoryPage({ story, relatedStories, seoData }: StoryPageP
 
   const { guardianArticle, openaiSummary } = story;
   const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'ParhoNet';
-  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.parho.net';
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -549,7 +549,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 
   const prisma = new PrismaClient();
-  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.parho.net';
 
   try {
     // Find the article by slug instead of encoded ID

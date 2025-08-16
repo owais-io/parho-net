@@ -46,7 +46,7 @@ export default function CategoriesPage({ categories, totalArticles, stats, seoDa
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'ParhoNet';
-  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.parho.net';
   const PAGE_DESCRIPTION = `Browse ${stats.totalCategories} news categories including ${seoData.topCategories.join(', ')} and more. Access ${totalArticles.toLocaleString()} AI-summarized articles organized by intelligent categorization.`;
 
   const filteredCategories = categories
@@ -516,7 +516,7 @@ export default function CategoriesPage({ categories, totalArticles, stats, seoDa
 
 export const getServerSideProps: GetServerSideProps = async () => {
   const prisma = new PrismaClient();
-  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.parho.net';
 
   try {
     // Get all categories with article counts and recent articles
