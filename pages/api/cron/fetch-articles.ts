@@ -16,12 +16,22 @@ interface ProcessingResult {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Security: Verify cron secret
+  // Multiple ways to authorize cron calls
+  const isVercelCron = req.headers['x-vercel-cron'] || 
+                       req.headers['user-agent']?.includes('vercel-cron');
   const cronSecret = req.headers.authorization?.replace('Bearer ', '');
-  if (cronSecret !== process.env.CRON_SECRET) {
+  
+  // Allow if: Vercel cron OR correct secret OR no secret (for testing)
+  if (!isVercelCron && cronSecret !== process.env.CRON_SECRET) {
+    console.log('Cron authorization failed:', {
+      isVercelCron,
+      hasSecret: !!cronSecret,
+      userAgent: req.headers['user-agent']
+    });
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
+  console.log('Cron job authorized:', { isVercelCron, hasSecret: !!cronSecret });
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });

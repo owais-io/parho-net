@@ -70,7 +70,7 @@ export class GuardianApiService {
         'show-fields': 'thumbnail,bodyText',
         'page-size': count,
         'order-by': 'newest',
-        'from-date': this.getDateDaysAgo(1), // Last 24 hours
+        'from-date': this.getDateDaysAgo(2), // Last 24 hours
         'show-elements': 'image'
       };
 
